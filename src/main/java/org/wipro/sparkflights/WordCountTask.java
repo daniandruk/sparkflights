@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.Comparator;
+import java.util.List;
 import org.apache.spark.api.java.JavaPairRDD;
 
 /**
@@ -37,19 +38,25 @@ public class WordCountTask {
         }
 
         WordCountTask wordCountTask = new WordCountTask();
-        JavaPairRDD<String, String> javaPairRDD = wordCountTask.run(inputFile);
+        wordCountTask.run(inputFile);
 
-        javaPairRDD.foreach(result -> {
-            int count = result._2.split(",").length;
-            LOGGER.info(String.format("Word [%s] count [%d] list [%s]", result._1(), count, result._2));
-        }
-        );
+//        List<Tuple2<String,String>> list=javaPairRDD.collect();
+//        
+//        list.forEach((tuple2) -> {
+//            int count = tuple2._2.split(",").length;
+//            LOGGER.info(String.format("Word [%s] count [%d] list [%s]", tuple2._1(), count, tuple2._2));
+//        });
+//        javaPairRDD.foreach(result -> {
+//            int count = result._2.split(",").length;
+//            LOGGER.info(String.format("Word [%s] count [%d] list [%s]", result._1(), count, result._2));
+//        }
+//        );
     }
 
     /**
      * The task body
      */
-    public JavaPairRDD<String, String> run(String inputFilePath) {
+    public void run(String inputFilePath) {
         /*
      * This is the address of the Spark cluster. We will call the task from WordCountTest and we
      * use a local standalone cluster. [*] means use all the cores available.
@@ -65,7 +72,7 @@ public class WordCountTask {
                 .setMaster(master);
         JavaSparkContext context = new JavaSparkContext(conf);
 
-        return context.textFile(inputFilePath).flatMap(text -> Arrays.asList(text.replace("\"", "").split("\\n")).iterator())
+        context.textFile(inputFilePath).flatMap(text -> Arrays.asList(text.replace("\"", "").split("\\n")).iterator())
                 .mapToPair(word -> new Tuple2<>(word.split(",")[6], word.split(",")[1]))
                 .reduceByKey((a, b) -> a + "," + b)
                 .mapToPair((Tuple2<String, String> item) -> item.swap())
@@ -74,7 +81,12 @@ public class WordCountTask {
                     Integer size2 = o2.split(",").length;
                     return Integer.compare(size1, size2);
                 }, false)
-                .mapToPair((Tuple2<String, String> item) -> item.swap());
+                .mapToPair((Tuple2<String, String> item) -> item.swap())
+                .collect()
+                .forEach((tuple2) -> {
+                    int count = tuple2._2.split(",").length;
+                    LOGGER.info(String.format("Word [%s] count [%d] list [%s]", tuple2._1(), count, tuple2._2));
+                });
     }
 
 //        SparkConf conf = new SparkConf()
