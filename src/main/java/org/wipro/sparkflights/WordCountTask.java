@@ -52,10 +52,10 @@ public class WordCountTask {
      * Performs a work count sequence of tasks and prints the output with a logger.
      */
     context.textFile(inputFilePath)
-        .flatMap(text -> Arrays.asList(text.replace("\"", "").split(",")).iterator())
-        .mapToPair(word -> new Tuple2<>(word, 1))
-        .reduceByKey((a, b) -> a + b)
+        .flatMap(text -> Arrays.asList(text.replace("\"", "").split("\\n")).stream().peek(a-> LOGGER.info("AAA ---> "+a)).iterator())
+        .mapToPair(word -> new Tuple2<>(word.split(",")[6], word.split(",")[1]))
+        .reduceByKey((a, b) -> a +","+ b)
         .foreach(result -> LOGGER.info(
-            String.format("Word [%s] count [%d].", result._1(), result._2)));
+            String.format("Word [%s] count [%s]", result._1(), result._2)));
   }
 }
