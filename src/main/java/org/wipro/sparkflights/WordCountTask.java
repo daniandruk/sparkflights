@@ -11,8 +11,6 @@ import java.util.Arrays;
 import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.Comparator;
-import java.util.List;
-import org.apache.spark.api.java.JavaPairRDD;
 
 /**
  * WordCountTask class, we will call this class with the test WordCountTest.
@@ -39,18 +37,6 @@ public class WordCountTask {
 
         WordCountTask wordCountTask = new WordCountTask();
         wordCountTask.run(inputFile);
-
-//        List<Tuple2<String,String>> list=javaPairRDD.collect();
-//        
-//        list.forEach((tuple2) -> {
-//            int count = tuple2._2.split(",").length;
-//            LOGGER.info(String.format("Word [%s] count [%d] list [%s]", tuple2._1(), count, tuple2._2));
-//        });
-//        javaPairRDD.foreach(result -> {
-//            int count = result._2.split(",").length;
-//            LOGGER.info(String.format("Word [%s] count [%d] list [%s]", result._1(), count, result._2));
-//        }
-//        );
     }
 
     /**
@@ -75,17 +61,17 @@ public class WordCountTask {
         context.textFile(inputFilePath).flatMap(text -> Arrays.asList(text.replace("\"", "").split("\\n")).iterator())
                 .mapToPair(word -> new Tuple2<>(word.split(",")[6], word.split(",")[1]))
                 .reduceByKey((a, b) -> a + "," + b)
-                .mapToPair((Tuple2<String, String> item) -> item.swap())
+                .mapToPair(item -> item.swap())
                 .sortByKey((Comparator<String> & Serializable) (String o1, String o2) -> {
                     Integer size1 = o1.split(",").length;
                     Integer size2 = o2.split(",").length;
                     return Integer.compare(size1, size2);
                 }, false)
-                .mapToPair((Tuple2<String, String> item) -> item.swap())
+                .mapToPair(item -> item.swap())
                 .collect()
                 .forEach((tuple2) -> {
-                    int count = tuple2._2.split(",").length;
-                    LOGGER.info(String.format("Word [%s] count [%d] list [%s]", tuple2._1(), count, tuple2._2));
+                    int count = tuple2._2().split(",").length;
+                    LOGGER.info(String.format("Word [%s] count [%d] list [%s]", tuple2._1(), count, tuple2._2()));
                 });
     }
 
