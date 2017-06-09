@@ -1,0 +1,11 @@
+Github repository:
+
+https://github.com/daniandruk/sparkflights
+
+Sample data:
+
+https://openflights.org/data.html
+
+Scala Plugin Netbeans
+
+https://github.com/akochnev/nbscala/releases/tag/1.8.2.0
